@@ -14,10 +14,10 @@ NEWS_API_KEY = "7f81b33d570c4a01a0a21dfa7108e408"
 
 # Default location (can be changed in GUI)
 DEFAULT_LOCATION = {
-    "city": "New York",
+    "city": "Chicago",
     "country": "US",
-    "lat": 40.7128,
-    "lon": -74.0060
+    "lat": 46.934913,
+    "lon": -97.616377
 }
 
 # API endpoints
