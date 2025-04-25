@@ -1,5 +1,5 @@
 import requests
-import json
+from datetime import datetime, timedelta
 from APIconfig import OPENWEATHER_API_KEY, AIRVISUAL_API_KEY, TICKETMASTER_API_KEY, NEWS_API_KEY, API_ENDPOINTS
 
 class APIClient:
@@ -12,92 +12,113 @@ class APIClient:
         }
         self.endpoints = API_ENDPOINTS
 
+    def _make_api_request(self, endpoint, params=None, headers=None, timeout=5):
+        """Generic API request handler with error handling"""
+        try:
+            response = requests.get(
+                self.endpoints[endpoint],
+                params=params,
+                headers=headers,
+                timeout=timeout
+            )
+            response.raise_for_status()
+            return response.json()
+        except requests.exceptions.RequestException as e:
+            print(f"API Error ({endpoint}): {str(e)}")
+            return None
+
     def get_weather_data(self, location):
-        """Fetch current weather data for a location"""
+        """Fetch current weather data"""
         params = {
             'lat': location['lat'],
             'lon': location['lon'],
             'appid': self.api_keys['weather'],
             'units': 'metric'
         }
-        try:
-            response = requests.get(self.endpoints['weather'], params=params)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"Weather API error: {e}")
-            return None
+        return self._make_api_request('weather', params)
 
     def get_air_quality_data(self, location):
-        """Fetch air quality data for a location"""
+        """Fetch air quality data"""
         params = {
             'lat': location['lat'],
             'lon': location['lon'],
             'key': self.api_keys['air_quality']
         }
-        try:
-            response = requests.get(self.endpoints['air_quality'], params=params)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"Air Quality API error: {e}")
-            return None
+        return self._make_api_request('air_quality', params)
 
     def get_local_events(self, location, category=None):
-        """Fetch local events using Ticketmaster API"""
+        # Try Ticketmaster API first
+        events = self._get_ticketmaster_events(location, category)
+        if events is not None:
+            return events
+            
+        # Fallback to mock data if API fails
+        return self._get_mock_events(location, category)
+
+    def _get_ticketmaster_events(self, location, category=None):
+        """Internal method to fetch events from Ticketmaster API"""
         params = {
             'apikey': self.api_keys['events'],
             'city': location['city'],
+            'countryCode': location['country'],
             'radius': '50',
             'unit': 'km',
             'sort': 'date,asc',
-            'size': '5'  # Limit to 5 results
+            'size': '3'
         }
         
         # Map categories to Ticketmaster classifications
-        if category == "outdoors":
-            params['classificationName'] = 'outdoor'
+        category_map = {
+            'outdoors': ['outdoor', 'sports'],
+            'music': ['music'],
+            'arts': ['arts']
+        }
         
-        try:
-            response = requests.get(self.endpoints['events'], params=params)
-            response.raise_for_status()
-            data = response.json()
-            
-            # Format the response to match expected structure
-            if '_embedded' in data:
-                return {
-                    'events': [
-                        {
-                            'name': event['name'],
-                            'url': event['url'],
-                            'start': {
-                                'local': event['dates']['start']['localDate'] + 'T' + 
-                                event['dates']['start'].get('localTime', '00:00:00')
-                            },
-                            'venue': event['_embedded']['venues'][0]['name'] 
-                            if '_embedded' in event and 'venues' in event['_embedded'] 
-                            else 'Unknown venue'
-                        }
-                        for event in data['_embedded']['events']
-                    ]
-                }
-            return {'events': []}
-        except requests.exceptions.RequestException as e:
-            print(f"Ticketmaster API error: {e}")
+        if category and category in category_map:
+            params['classificationName'] = ','.join(category_map[category])
+        
+        data = self._make_api_request('events', params)
+        if data is None:
             return None
+            
+        # Process successful response
+        if '_embedded' in data and 'events' in data['_embedded']:
+            events = []
+            for event in data['_embedded']['events']:
+                event_data = {
+                    'name': event.get('name', 'Unknown Event'),
+                    'url': event.get('url', '#'),
+                    'start': {
+                        'local': self._format_event_time(event.get('dates', {}).get('start'))
+                    },
+                    'venue': self._get_venue_name(event)
+                }
+                events.append(event_data)
+            return {'events': events}
+        return None
+
+    def _format_event_time(self, start_data):
+        """Format event time from API response"""
+        if not start_data:
+            return datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+        
+        date = start_data.get('localDate', '')
+        time = start_data.get('localTime', '00:00:00')
+        return f"{date}T{time}" if date else datetime.now().strftime('%Y-%m-%dT%H:%M:%S')
+
+    def _get_venue_name(self, event):
+        """Extract venue name from event data"""
+        if '_embedded' in event and 'venues' in event['_embedded']:
+            return event['_embedded']['venues'][0].get('name', 'Unknown venue')
+        return 'Unknown venue'
+
 
     def get_news(self, location, category="general"):
-        """Fetch news for a location"""
+        """Fetch news headlines"""
         params = {
             "apiKey": self.api_keys['news'],
             "country": location['country'].lower(),
-            "category": category
+            "category": category,
+            "pageSize": 3
         }
-        try:
-            response = requests.get(self.endpoints['news'], params=params)
-            response.raise_for_status()
-            return response.json()
-        except requests.exceptions.RequestException as e:
-            print(f"News API error: {e}")
-            return None
-        
+        return self._make_api_request('news', params)
