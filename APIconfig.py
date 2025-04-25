@@ -24,6 +24,6 @@ DEFAULT_LOCATION = {
 API_ENDPOINTS = {
     "weather": "https://api.openweathermap.org/data/2.5/weather",
     "air_quality": "http://api.airvisual.com/v2/nearest_city",
-    "events": "https://www.eventbriteapi.com/v3/events/search/",
+    "events": "https://app.ticketmaster.com/discovery/v2/events.json",
     "news": "https://newsapi.org/v2/top-headlines"
 }
