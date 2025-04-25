@@ -1,13 +1,13 @@
 import requests
 import json
-from config import OPENWEATHER_API_KEY, AIRVISUAL_API_KEY, TICKETMASTER_API_KEY, NEWS_API_KEY, API_ENDPOINTS
+from APIconfig import OPENWEATHER_API_KEY, AIRVISUAL_API_KEY, TICKETMASTER_API_KEY, NEWS_API_KEY, API_ENDPOINTS
 
 class APIClient:
     def __init__(self):
         self.api_keys = {
             "weather": OPENWEATHER_API_KEY,
             "air_quality": AIRVISUAL_API_KEY,
-            "events": TICKETMASTER_API_KEY,  # Now using Ticketmaster
+            "events": TICKETMASTER_API_KEY,
             "news": NEWS_API_KEY
         }
         self.endpoints = API_ENDPOINTS
@@ -100,3 +100,4 @@ class APIClient:
         except requests.exceptions.RequestException as e:
             print(f"News API error: {e}")
             return None
+        
