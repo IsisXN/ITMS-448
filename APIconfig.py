@@ -1,16 +1,16 @@
 # Configuration file for API keys and settings
 
 # OpenWeatherMap API (Weather data)
-OPENWEATHER_API_KEY = "your_openweather_api_key_here"
+OPENWEATHER_API_KEY = "bebda8996ee02d83265ef88e95d3b7f3"
 
 # AirVisual API (Air quality data)
-AIRVISUAL_API_KEY = "your_airvisual_api_key_here"
+AIRVISUAL_API_KEY = "dc47b586-4d4d-4be9-91f1-2efc06cfa503"
 
 # Eventbrite API (Local events)
-EVENTBRITE_API_KEY = "your_eventbrite_api_key_here"
+EVENTBRITE_API_KEY = "CYQ35HYELDDZ4E7VTREG"
 
 # NewsAPI (News)
-NEWS_API_KEY = "your_newsapi_key_here"
+NEWS_API_KEY = "7f81b33d570c4a01a0a21dfa7108e408"
 
 # Default location (can be changed in GUI)
 DEFAULT_LOCATION = {
