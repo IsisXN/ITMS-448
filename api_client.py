@@ -1,13 +1,13 @@
 import requests
 import json
-from APIconfig import OPENWEATHER_API_KEY, AIRVISUAL_API_KEY, EVENTBRITE_API_KEY, NEWS_API_KEY, API_ENDPOINTS
+from config import OPENWEATHER_API_KEY, AIRVISUAL_API_KEY, TICKETMASTER_API_KEY, NEWS_API_KEY, API_ENDPOINTS
 
 class APIClient:
     def __init__(self):
         self.api_keys = {
             "weather": OPENWEATHER_API_KEY,
             "air_quality": AIRVISUAL_API_KEY,
-            "events": EVENTBRITE_API_KEY,
+            "events": TICKETMASTER_API_KEY,  # Now using Ticketmaster
             "news": NEWS_API_KEY
         }
         self.endpoints = API_ENDPOINTS
@@ -44,26 +44,47 @@ class APIClient:
             return None
 
     def get_local_events(self, location, category=None):
+        """Fetch local events using Ticketmaster API"""
         params = {
-            "token": self.api_keys['events'],  # Add this line
-            "location.address": location['city'],
-            "location.within": "50km",
-            "sort_by": "date",
+            'apikey': self.api_keys['events'],
+            'city': location['city'],
+            'radius': '50',
+            'unit': 'km',
+            'sort': 'date,asc',
+            'size': '5'  # Limit to 5 results
         }
-        if category:
-            params["categories"] = category
-
+        
+        # Map categories to Ticketmaster classifications
+        if category == "outdoors":
+            params['classificationName'] = 'outdoor'
+        
         try:
-            response = requests.get(
-                self.endpoints['events'],
-                params=params  # No headers needed now
-            )
+            response = requests.get(self.endpoints['events'], params=params)
             response.raise_for_status()
-            return response.json()
+            data = response.json()
+            
+            # Format the response to match expected structure
+            if '_embedded' in data:
+                return {
+                    'events': [
+                        {
+                            'name': event['name'],
+                            'url': event['url'],
+                            'start': {
+                                'local': event['dates']['start']['localDate'] + 'T' + 
+                                event['dates']['start'].get('localTime', '00:00:00')
+                            },
+                            'venue': event['_embedded']['venues'][0]['name'] 
+                            if '_embedded' in event and 'venues' in event['_embedded'] 
+                            else 'Unknown venue'
+                        }
+                        for event in data['_embedded']['events']
+                    ]
+                }
+            return {'events': []}
         except requests.exceptions.RequestException as e:
-            print(f"Eventbrite API Error: {e}")
+            print(f"Ticketmaster API error: {e}")
             return None
-
 
     def get_news(self, location, category="general"):
         """Fetch news for a location"""

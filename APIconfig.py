@@ -6,8 +6,8 @@ OPENWEATHER_API_KEY = "bebda8996ee02d83265ef88e95d3b7f3"
 # AirVisual API (Air quality data)
 AIRVISUAL_API_KEY = "dc47b586-4d4d-4be9-91f1-2efc06cfa503"
 
-# Eventbrite API (Local events)
-EVENTBRITE_API_KEY = "CYQ35HYELDDZ4E7VTREG"
+# TicketMaster API (Local events)
+TICKETMASTER_API_KEY = "MaTBZ2Q53vhAsxIOlL6thfhhRlmAQDl1"
 
 # NewsAPI (News)
 NEWS_API_KEY = "7f81b33d570c4a01a0a21dfa7108e408"

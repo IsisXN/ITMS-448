@@ -56,9 +56,10 @@ class RecommendationEngine:
         if weather_main in ['Clear', 'Clouds'] and temp > 15 and aqi <= 100:
             events = self.api_client.get_local_events(location, "outdoors")
             if events and events.get('events'):
-                recommendations.append("🌳 Great day for outdoor activities! Check out local events:")
-                for event in events['events'][:3]:
-                    recommendations.append(f"- {event['name']['text']} ({event['start']['local']})")
+                recommendations.append("🎟️ Great day for outdoor activities! Check out these events:")
+                for event in events['events'][:3]:  # Show top 3 events
+                    time_str = event['start']['local'].split('T')[1][:5] if 'T' in event['start']['local'] else "all day"
+                    recommendations.append(f"- {event['name']} at {event['venue']} ({time_str})")
         
         # News headlines
         news = self.api_client.get_news(location)
