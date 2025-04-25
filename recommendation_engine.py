@@ -42,7 +42,7 @@ class RecommendationEngine:
             if aqi <= 50:
                 recommendations.append("😊 Air quality is good. Great day for outdoor activities!")
             elif aqi <= 100:
-                recommendations.append("🙂 Air quality is moderate. Sensitive groups should reduce outdoor exertion.")
+                recommendations.append("🙂 Air quality is moderate. Decent for outdoor activities.")
             elif aqi <= 150:
                 recommendations.append("😷 Air quality is unhealthy for sensitive groups. Consider limiting outdoor activities.")
             elif aqi <= 200:
