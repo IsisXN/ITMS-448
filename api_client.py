@@ -44,25 +44,26 @@ class APIClient:
             return None
 
     def get_local_events(self, location, category=None):
-        """Fetch local events for a location"""
-        headers = {
-            "Authorization": f"Bearer {self.api_keys['events']}"
-        }
         params = {
+            "token": self.api_keys['events'],  # Add this line
             "location.address": location['city'],
             "location.within": "50km",
-            "sort_by": "date"
+            "sort_by": "date",
         }
         if category:
             params["categories"] = category
-            
+
         try:
-            response = requests.get(self.endpoints['events'], headers=headers, params=params)
+            response = requests.get(
+                self.endpoints['events'],
+                params=params  # No headers needed now
+            )
             response.raise_for_status()
             return response.json()
         except requests.exceptions.RequestException as e:
-            print(f"Events API error: {e}")
+            print(f"Eventbrite API Error: {e}")
             return None
+
 
     def get_news(self, location, category="general"):
         """Fetch news for a location"""
